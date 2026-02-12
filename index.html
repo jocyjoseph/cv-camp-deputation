@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CV Camp Deputation Portal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6366f1; --primary-hover: #4f46e5; --bg: #f8fafc;
+            --card-bg: #ffffff; --text-main: #0f172a; --text-muted: #64748b;
+            --border: #e2e8f0; --warning-bg: #fff7ed; --warning-text: #9a3412; --success: #10b981;
+        }
+        * { box-sizing: border-box; transition: all 0.2s ease; }
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg); color: var(--text-main); margin: 0; padding: 40px 20px; }
+        .container { max-width: 850px; margin: 0 auto; background: var(--card-bg); padding: 40px; border-radius: 24px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.05); }
+        
+        /* Print logic */
+        #printHeader, #printFooter, #printTimestamp { display: none; text-align: center; }
+        @media print {
+            .no-print, button, .instruction-box { display: none !important; }
+            #printHeader, #printFooter, #printTimestamp { display: block !important; }
+            .container { box-shadow: none; width: 100%; border: none; padding: 0; }
+            .review-grid { display: grid; grid-template-columns: 1fr 1fr; }
+        }
+
+        header { text-align: center; margin-bottom: 35px; }
+        h1 { font-weight: 800; font-size: 26px; color: #1e293b; }
+        .instruction-box { margin-top: 20px; padding: 20px; background: var(--warning-bg); border-left: 4px solid #f97316; border-radius: 12px; text-align: left; }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .full { grid-column: span 2; }
+        .section-header { grid-column: span 2; display: flex; align-items: center; margin: 30px 0 10px 0; }
+        .section-header span { font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--primary); font-weight: 800; }
+        .section-header::after { content: ""; height: 1px; width: 100%; background: var(--border); margin-left: 15px; }
+        .form-group { display: flex; flex-direction: column; }
+        label { font-size: 13px; font-weight: 600; margin-bottom: 8px; }
+        select, input { padding: 14px; border: 1.5px solid var(--border); border-radius: 12px; font-size: 15px; outline: none; }
+        
+        #postSubmitAction { display: none; text-align: center; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid var(--border); }
+        .btn-primary { background: var(--primary); color: white; border: none; padding: 16px; border-radius: 12px; font-weight: 700; cursor: pointer; width: 100%; }
+        .btn-success { background: var(--success); color: white; border: none; padding: 16px; border-radius: 12px; font-weight: 700; cursor: pointer; }
+        .review-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
+        .review-item { padding: 10px; border-bottom: 1px solid #f1f5f9; }
+        .review-label { font-size: 11px; text-transform: uppercase; color: var(--text-muted); font-weight: 700; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div id="postSubmitAction" class="no-print">
+        <div style="color: var(--success); font-weight: 700; margin-bottom: 15px;">✓ Application Submitted Successfully</div>
+        <button class="btn-primary" onclick="generateTimestamp(); window.print();" style="max-width: 300px;">Print Application Summary</button>
+    </div>
+
+    <div id="printHeader">
+        <div style="font-weight: 700; font-size: 18px; text-transform: uppercase;">Board of Vocational Higher Secondary Examinations</div>
+        <div style="font-size: 14px;">Housing Board Buildings, Santhinagar PO, Thiruvananthapuram - 695001</div>
+    </div>
+
+    <header>
+        <h1 id="mainTitle">CV Camp Deputation Portal</h1>
+        <div class="instruction-box no-print" id="instructionBox">
+            <p>This form is for teachers deputed to Centralized Valuation (CV) camps for <strong>non-vocational subjects</strong>. Please verify all details before final submission.</p>
+        </div>
+    </header>
+
+    <form id="entryForm">
+        <div class="form-grid">
+            <div class="section-header"><span>Personal & Professional Info</span></div>
+            <div class="form-group full">
+                <label>Name (Applicant)</label>
+                <input type="text" name="Name" pattern="[a-zA-Z\s\.]+" required>
+            </div>
+            <div class="form-group">
+                <label>PEN (6 Digits)</label>
+                <input type="text" name="PEN" pattern="\d{6}" required>
+            </div>
+            <div class="form-group">
+                <label>Mobile Number (10 Digits)</label>
+                <input type="tel" name="Mobile" pattern="\d{10}" required>
+            </div>
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" name="Email" pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$" required>
+            </div>
+            <div class="form-group">
+                <label>Date of Entry to Service</label>
+                <input type="date" name="ServiceEntryDate" required>
+            </div>
+
+            <div class="section-header"><span>School Details</span></div>
+            <div class="form-group">
+                <label>District</label>
+                <select id="district" name="District" required><option value="">Loading districts...</option></select>
+            </div>
+            <div class="form-group">
+                <label>School Code</label>
+                <select id="schoolCode" name="SchoolCode" required><option value="">Select District</option></select>
+            </div>
+            <div class="form-group full">
+                <label>Name of School</label>
+                <select id="schoolName" name="SchoolName" required><option value="">Select District</option></select>
+            </div>
+
+            <div class="form-group">
+                <label>Subject</label>
+                <select name="Subject" required>
+                    <option value="">-- Select --</option>
+                    <option value="Physics">Physics</option>
+                    <option value="Mathematics">Mathematics</option>
+                    <option value="Chemistry">Chemistry</option>
+                    <option value="English">English</option>
+                    </select>
+            </div>
+            <div class="form-group">
+                <label>Designation</label>
+                <select name="Designation" required>
+                    <option value="">-- Select --</option>
+                    <option value="HSST">HSST</option>
+                    <option value="HSST (Jr)">HSST (Jr)</option>
+                    <option value="Non-Vocational Teacher">Non-Vocational Teacher</option>
+                </select>
+            </div>
+
+            <div class="section-header"><span>Banking & CV Camp Preference</span></div>
+            <div class="form-group"><label>Account Number</label><input type="text" name="AccountNumber" required></div>
+            <div class="form-group"><label>IFSC</label><input type="text" name="IFSC" pattern="[a-zA-Z0-9]{11}" required></div>
+            <div class="form-group">
+                <label>Preferred CV Camp</label>
+                <select name="CVCamp" required>
+                    <option value="">-- Select --</option>
+                    <option value="Camp A">Camp A</option>
+                    <option value="Camp B">Camp B</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>CV Camp Code</label>
+                <select name="CVCampCode" required>
+                    <option value="">-- Select --</option>
+                    <option value="C001">C001</option>
+                    <option value="C002">C002</option>
+                </select>
+            </div>
+        </div>
+        <button type="button" class="btn-primary" onclick="showReview()" style="margin-top: 20px;">Preview Application</button>
+    </form>
+
+    <div id="reviewMode" style="display:none;">
+        <div class="review-grid" id="reviewContent"></div>
+        <div style="display: flex; gap: 15px; margin-top: 30px;" class="no-print">
+            <button onclick="editForm()" style="background:#f1f5f9; border:none; padding:16px; border-radius:12px; flex:1; cursor:pointer;">Edit Details</button>
+            <button id="finalBtn" onclick="finalSubmit()" class="btn-success" style="flex:1;">Final Verify & Submit</button>
+        </div>
+    </div>
+
+    <div id="printFooter">
+        <p>This is your personal copy of the form you submitted for your reference.</p>
+        <p>Board of Vocational Higher Secondary Examinations, Thiruvananthapuram</p>
+    </div>
+    <div id="printTimestamp"></div>
+</div>
+
+<script>
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby3jqjs6mO_eTUWpzIiIyz111VtCizvrmY8hK-ap9cVrL28DpYNRhHq67lMOvtAXcuBkw/exec';
+    let schoolData = [];
+
+    // Fetch School Mapping from Google Sheet
+    window.onload = () => {
+        fetch(SCRIPT_URL)
+            .then(res => res.json())
+            .then(data => {
+                schoolData = data.mapping;
+                const distSelect = document.getElementById('district');
+                distSelect.innerHTML = '<option value="">-- Select --</option>';
+                data.districts.forEach(d => {
+                    let opt = document.createElement('option');
+                    opt.value = opt.textContent = d;
+                    distSelect.appendChild(opt);
+                });
+            });
+    };
+
+    // Dependent Logic
+    document.getElementById('district').addEventListener('change', function() {
+        const filtered = schoolData.filter(s => s.dist === this.value);
+        const nameSel = document.getElementById('schoolName');
+        const codeSel = document.getElementById('schoolCode');
+        
+        nameSel.innerHTML = codeSel.innerHTML = '<option value="">-- Select --</option>';
+        filtered.forEach(s => {
+            nameSel.add(new Option(s.name, s.name));
+            codeSel.add(new Option(s.code, s.code));
+        });
+    });
+
+    function showReview() {
+        const form = document.getElementById('entryForm');
+        if(!form.checkValidity()) { form.reportValidity(); return; }
+        
+        let html = '';
+        new FormData(form).forEach((val, key) => {
+            html += `<div class="review-item"><div class="review-label">${key}</div><div class="review-value">${val}</div></div>`;
+        });
+
+        document.getElementById('mainTitle').innerText = "CV Camp Preference Application Summary";
+        document.getElementById('instructionBox').style.display = 'none';
+        document.getElementById('reviewContent').innerHTML = html;
+        document.getElementById('entryForm').style.display = 'none';
+        document.getElementById('reviewMode').style.display = 'block';
+    }
+
+    function editForm() {
+        document.getElementById('mainTitle').innerText = "CV Camp Deputation Portal";
+        document.getElementById('instructionBox').style.display = 'block';
+        document.getElementById('entryForm').style.display = 'block';
+        document.getElementById('reviewMode').style.display = 'none';
+    }
+
+    function finalSubmit() {
+        const btn = document.getElementById('finalBtn');
+        btn.disabled = true; btn.innerText = "Submitting...";
+        
+        fetch(SCRIPT_URL, { method: 'POST', body: new FormData(document.getElementById('entryForm')) })
+            .then(() => {
+                document.getElementById('postSubmitAction').style.display = 'block';
+                document.getElementById('reviewMode').style.display = 'none';
+                window.scrollTo(0,0);
+            });
+    }
+
+    function generateTimestamp() {
+        document.getElementById('printTimestamp').innerText = "Printed on: " + new Date().toLocaleString();
+    }
+</script>
+</body>
+</html>
