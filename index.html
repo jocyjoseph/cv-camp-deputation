@@ -21,7 +21,18 @@
             .no-print, button, .instruction-box { display: none !important; }
             #printHeader, #printFooter, #printTimestamp { display: block !important; }
             .container { box-shadow: none; width: 100%; border: none; padding: 0; }
-            .review-grid { display: grid; grid-template-columns: 1fr 1fr; }
+            
+            /* Updated print grid settings for better spacing */
+            .review-grid { 
+                display: grid; 
+                grid-template-columns: 1fr 1fr; 
+                gap: 25px; 
+                margin-top: 20px;
+            }
+            .review-item { 
+                border-bottom: 1px solid #cbd5e1; 
+                break-inside: avoid; /* Prevents data from splitting between pages */
+            }
         }
 
         header { text-align: center; margin-bottom: 35px; }
@@ -39,22 +50,36 @@
         #postSubmitAction { display: none; text-align: center; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid var(--border); }
         .btn-primary { background: var(--primary); color: white; border: none; padding: 16px; border-radius: 12px; font-weight: 700; cursor: pointer; width: 100%; }
         .btn-success { background: var(--success); color: white; border: none; padding: 16px; border-radius: 12px; font-weight: 700; cursor: pointer; }
+        
+        /* Updated Review & Print Formatting */
         .review-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
-        .review-item { padding: 10px; border-bottom: 1px solid #f1f5f9; }
-        .review-label { font-size: 11px; text-transform: uppercase; color: var(--text-muted); font-weight: 700; }
+        .review-item { padding: 12px 8px; border-bottom: 1px solid #e2e8f0; break-inside: avoid; }
+        .review-label { 
+            font-size: 11px; 
+            text-transform: uppercase; 
+            color: var(--text-muted); 
+            font-weight: 700; 
+            margin-bottom: 6px; /* Space between title and data */
+            letter-spacing: 0.5px;
+        }
+        .review-value {
+            font-size: 15px;
+            font-weight: 500;
+            color: var(--text-main);
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div id="postSubmitAction" class="no-print">
-        <div style="color: var(--success); font-weight: 700; margin-bottom: 15px;">✓ Application Submitted Successfully</div>
+        <div style="color: var(--success); font-weight: 700; margin-bottom: 15px; font-size: 18px;">✓ Application Submitted Successfully</div>
         <button class="btn-primary" onclick="generateTimestamp(); window.print();" style="max-width: 300px;">Print Application Summary</button>
     </div>
 
     <div id="printHeader">
         <div style="font-weight: 700; font-size: 18px; text-transform: uppercase;">Board of Vocational Higher Secondary Examinations</div>
-        <div style="font-size: 14px;">Housing Board Buildings, Santhinagar PO, Thiruvananthapuram - 695001</div>
+        <div style="font-size: 14px; margin-bottom: 20px;">Housing Board Buildings, Santhinagar PO, Thiruvananthapuram - 695001</div>
     </div>
 
     <header>
@@ -110,7 +135,7 @@
                     <option value="Mathematics">Mathematics</option>
                     <option value="Chemistry">Chemistry</option>
                     <option value="English">English</option>
-                    </select>
+                </select>
             </div>
             <div class="form-group">
                 <label>Designation</label>
@@ -147,37 +172,48 @@
 
     <div id="reviewMode" style="display:none;">
         <div class="review-grid" id="reviewContent"></div>
-        <div style="display: flex; gap: 15px; margin-top: 30px;" class="no-print">
-            <button onclick="editForm()" style="background:#f1f5f9; border:none; padding:16px; border-radius:12px; flex:1; cursor:pointer;">Edit Details</button>
+        <div id="reviewActionButtons" style="display: flex; gap: 15px; margin-top: 30px;" class="no-print">
+            <button onclick="editForm()" style="background:#f1f5f9; border:none; padding:16px; border-radius:12px; flex:1; cursor:pointer; font-weight: 600;">Edit Details</button>
             <button id="finalBtn" onclick="finalSubmit()" class="btn-success" style="flex:1;">Final Verify & Submit</button>
         </div>
     </div>
 
-    <div id="printFooter">
-        <p>This is your personal copy of the form you submitted for your reference.</p>
-        <p>Board of Vocational Higher Secondary Examinations, Thiruvananthapuram</p>
+    <div id="printFooter" style="margin-top: 40px; border-top: 1px solid #cbd5e1; padding-top: 10px;">
+        <p style="font-size: 12px; color: #64748b;">This is your personal copy of the form you submitted for your reference.</p>
+        <p style="font-size: 12px; color: #64748b; font-weight: bold;">Board of Vocational Higher Secondary Examinations, Thiruvananthapuram</p>
     </div>
-    <div id="printTimestamp"></div>
+    <div id="printTimestamp" style="font-size: 11px; color: #94a3b8; margin-top: 10px;"></div>
 </div>
 
 <script>
+    // MAKE SURE THIS IS YOUR /exec URL
     const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby3jqjs6mO_eTUWpzIiIyz111VtCizvrmY8hK-ap9cVrL28DpYNRhHq67lMOvtAXcuBkw/exec';
     let schoolData = [];
 
-    // Fetch School Mapping from Google Sheet
+    // Fetch School Mapping from Google Sheet (Updated with redirect: 'follow')
     window.onload = () => {
-        fetch(SCRIPT_URL)
-            .then(res => res.json())
-            .then(data => {
-                schoolData = data.mapping;
-                const distSelect = document.getElementById('district');
-                distSelect.innerHTML = '<option value="">-- Select --</option>';
-                data.districts.forEach(d => {
-                    let opt = document.createElement('option');
-                    opt.value = opt.textContent = d;
-                    distSelect.appendChild(opt);
-                });
+        fetch(SCRIPT_URL, {
+            method: 'GET',
+            redirect: 'follow'
+        })
+        .then(res => {
+            if (!res.ok) throw new Error('Network response was not ok');
+            return res.json();
+        })
+        .then(data => {
+            schoolData = data.mapping;
+            const distSelect = document.getElementById('district');
+            distSelect.innerHTML = '<option value="">-- Select District --</option>';
+            data.districts.forEach(d => {
+                let opt = document.createElement('option');
+                opt.value = opt.textContent = d;
+                distSelect.appendChild(opt);
             });
+        })
+        .catch(error => {
+            console.error("Error fetching districts:", error);
+            document.getElementById('district').innerHTML = '<option value="">Error loading data.</option>';
+        });
     };
 
     // Dependent Logic
@@ -199,7 +235,8 @@
         
         let html = '';
         new FormData(form).forEach((val, key) => {
-            html += `<div class="review-item"><div class="review-label">${key}</div><div class="review-value">${val}</div></div>`;
+            // Updated to include the new review-value CSS class
+            html += `<div class="review-item"><div class="review-label">${key}</div><div class="review-value">${val || '-'}</div></div>`;
         });
 
         document.getElementById('mainTitle').innerText = "CV Camp Preference Application Summary";
@@ -222,19 +259,16 @@
         
         fetch(SCRIPT_URL, { method: 'POST', body: new FormData(document.getElementById('entryForm')) })
             .then(() => {
-                // 1. Show the success message and print button
+                // Show success message and print button
                 document.getElementById('postSubmitAction').style.display = 'block';
                 
-                // 2. REMOVED: document.getElementById('reviewMode').style.display = 'none';
-                // We keep reviewMode visible so the data actually prints!
-                
-                // 3. Hide the "Edit" and "Submit" buttons so they can't be clicked again
-                document.querySelector('#reviewMode .no-print').style.display = 'none';
+                // Keep reviewMode visible for printing, but hide the edit/submit buttons
+                document.getElementById('reviewActionButtons').style.display = 'none';
                 
                 window.scrollTo(0,0);
             })
             .catch(error => {
-                alert("There was an error submitting your form. Please try again.");
+                alert("There was an error submitting. Please try again.");
                 btn.disabled = false;
                 btn.innerText = "Final Verify & Submit";
             });
@@ -245,5 +279,4 @@
     }
 </script>
 </body>
-
 </html>
