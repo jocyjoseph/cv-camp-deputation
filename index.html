@@ -222,9 +222,21 @@
         
         fetch(SCRIPT_URL, { method: 'POST', body: new FormData(document.getElementById('entryForm')) })
             .then(() => {
+                // 1. Show the success message and print button
                 document.getElementById('postSubmitAction').style.display = 'block';
-                document.getElementById('reviewMode').style.display = 'none';
+                
+                // 2. REMOVED: document.getElementById('reviewMode').style.display = 'none';
+                // We keep reviewMode visible so the data actually prints!
+                
+                // 3. Hide the "Edit" and "Submit" buttons so they can't be clicked again
+                document.querySelector('#reviewMode .no-print').style.display = 'none';
+                
                 window.scrollTo(0,0);
+            })
+            .catch(error => {
+                alert("There was an error submitting your form. Please try again.");
+                btn.disabled = false;
+                btn.innerText = "Final Verify & Submit";
             });
     }
 
@@ -233,4 +245,5 @@
     }
 </script>
 </body>
+
 </html>
