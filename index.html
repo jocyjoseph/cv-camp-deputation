@@ -244,7 +244,11 @@
         const btn = document.getElementById('finalBtn');
         btn.disabled = true; btn.innerText = "Submitting...";
         
-        fetch(SCRIPT_URL, { method: 'POST', body: new FormData(document.getElementById('entryForm')) })
+        fetch(SCRIPT_URL, { 
+            method: 'POST', 
+            mode: 'no-cors', // <-- THE FIX: Bypasses the browser's strict CORS block
+            body: new FormData(document.getElementById('entryForm')) 
+        })
             .then(() => {
                 document.getElementById('postSubmitAction').style.display = 'block';
                 document.getElementById('reviewActionButtons').style.display = 'none';
