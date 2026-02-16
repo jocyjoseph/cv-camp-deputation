@@ -10,6 +10,7 @@
             --primary: #6366f1; --primary-hover: #4f46e5; --bg: #f8fafc;
             --card-bg: #ffffff; --text-main: #0f172a; --text-muted: #64748b;
             --border: #e2e8f0; --warning-bg: #fff7ed; --warning-text: #9a3412; --success: #10b981;
+            --danger-bg: #fef2f2; --danger-text: #991b1b; --danger-border: #f87171;
         }
         * { box-sizing: border-box; transition: all 0.2s ease; }
         body { font-family: 'Inter', sans-serif; background-color: var(--bg); color: var(--text-main); margin: 0; padding: 40px 20px; }
@@ -21,22 +22,19 @@
             .no-print, button, .instruction-box { display: none !important; }
             #printHeader, #printFooter, #printTimestamp { display: block !important; }
             .container { box-shadow: none; width: 100%; border: none; padding: 0; }
-            
-            .review-grid { 
-                display: grid; 
-                grid-template-columns: 1fr 1fr; 
-                gap: 25px; 
-                margin-top: 20px;
-            }
-            .review-item { 
-                border-bottom: 1px solid #cbd5e1; 
-                break-inside: avoid;
-            }
+            .review-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; margin-top: 20px; }
+            .review-item { border-bottom: 1px solid #cbd5e1; break-inside: avoid; }
         }
 
         header { text-align: center; margin-bottom: 35px; }
         h1 { font-weight: 800; font-size: 26px; color: #1e293b; }
         .instruction-box { margin-top: 20px; padding: 20px; background: var(--warning-bg); border-left: 4px solid #f97316; border-radius: 12px; text-align: left; }
+        
+        /* Closed Message Style */
+        #closedMessage { display: none; text-align: center; padding: 40px 20px; background: var(--danger-bg); border: 2px solid var(--danger-border); border-radius: 16px; margin-top: 20px; }
+        #closedMessage h2 { color: var(--danger-text); margin-top: 0; }
+        #closedMessage p { color: var(--text-main); font-size: 16px; font-weight: 500; line-height: 1.5; }
+
         .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
         .full { grid-column: span 2; }
         .section-header { grid-column: span 2; display: flex; align-items: center; margin: 30px 0 10px 0; }
@@ -53,10 +51,7 @@
         /* Review & Print Formatting */
         .review-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
         .review-item { padding: 12px 8px; border-bottom: 1px solid #e2e8f0; break-inside: avoid; }
-        .review-label { 
-            font-size: 11px; text-transform: uppercase; color: var(--text-muted); 
-            font-weight: 700; margin-bottom: 6px; letter-spacing: 0.5px;
-        }
+        .review-label { font-size: 11px; text-transform: uppercase; color: var(--text-muted); font-weight: 700; margin-bottom: 6px; letter-spacing: 0.5px; }
         .review-value { font-size: 15px; font-weight: 500; color: var(--text-main); }
     </style>
 </head>
@@ -79,6 +74,11 @@
             <p>This form is for teachers deputed to Centralized Valuation (CV) camps for <strong>non-vocational subjects</strong>. Please verify all details before final submission.</p>
         </div>
     </header>
+
+    <div id="closedMessage" class="no-print">
+        <h2>Portal Closed</h2>
+        <p>The last date for the submission of the application is over.<br>Please contact the VHSE examination office for details.</p>
+    </div>
 
     <form id="entryForm">
         <div class="form-grid">
@@ -129,7 +129,12 @@
 
             <div class="section-header"><span>Banking & CV Camp Preference</span></div>
             <div class="form-group"><label>Account Number</label><input type="text" name="AccountNumber" required></div>
-            <div class="form-group"><label>IFSC</label><input type="text" name="IFSC" pattern="[a-zA-Z0-9]{11}" required></div>
+            
+            <div class="form-group">
+                <label>IFSC</label>
+                <input type="text" name="IFSC" pattern="[A-Za-z0-9]{11}" placeholder="e.g. SBIN0001234" oninput="this.value = this.value.replace(/\s/g, '').toUpperCase();" required>
+            </div>
+            
             <div class="form-group">
                 <label>Preferred CV Camp</label>
                 <select id="cvCamp" name="CVCamp" required><option value="">Loading...</option></select>
@@ -159,10 +164,9 @@
 
 <script>
     // MAKE SURE THIS IS YOUR LIVE /exec URL
-    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyB5IkAK5HHoFCOw5KlLVZtQ6GkV3-a9styxmjBZdzT-01otjxwgtvP1vZSdGJQiE0C4g/exec';
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwCS-1csi8PE862P7PEfGk2C16M7Xd8GIS5MmTDbyjpDKUvps7D3M4Megkkp840md70OQ/exec';
     let schoolData = [];
 
-    // Helper function to dynamically populate dropdowns
     function populateDropdown(selectId, dataArray) {
         const select = document.getElementById(selectId);
         select.innerHTML = '<option value="">-- Select --</option>';
@@ -173,20 +177,20 @@
         });
     }
 
-    // Fetch All Data from Google Sheet
+    // Fetch Data & Check Deadline
     window.onload = () => {
-        fetch(SCRIPT_URL, {
-            method: 'GET',
-            redirect: 'follow'
-        })
-        .then(res => {
-            if (!res.ok) throw new Error('Network response was not ok');
-            return res.json();
-        })
+        fetch(SCRIPT_URL, { method: 'GET', redirect: 'follow' })
+        .then(res => res.json())
         .then(data => {
+            // Check if deadline passed
+            if (data.isOpen === false) {
+                document.getElementById('entryForm').style.display = 'none';
+                document.getElementById('instructionBox').style.display = 'none';
+                document.getElementById('closedMessage').style.display = 'block';
+                return; // Stop running the rest of the script
+            }
+
             schoolData = data.mapping;
-            
-            // Populate all dropdowns
             populateDropdown('district', data.districts);
             populateDropdown('subject', data.subjects);
             populateDropdown('designation', data.designations);
@@ -195,16 +199,11 @@
         })
         .catch(error => {
             console.error("Error fetching data:", error);
-            const errorMsg = '<option value="">Error loading data.</option>';
-            document.getElementById('district').innerHTML = errorMsg;
-            document.getElementById('subject').innerHTML = errorMsg;
-            document.getElementById('designation').innerHTML = errorMsg;
-            document.getElementById('cvCamp').innerHTML = errorMsg;
-            document.getElementById('cvCampCode').innerHTML = errorMsg;
+            document.getElementById('district').innerHTML = '<option value="">Error loading data.</option>';
         });
     };
 
-    // Dependent Logic for School Code and Name
+    // Dependent Logic: Filter Schools by District
     document.getElementById('district').addEventListener('change', function() {
         const filtered = schoolData.filter(s => s.dist === this.value);
         const nameSel = document.getElementById('schoolName');
@@ -215,6 +214,24 @@
             nameSel.add(new Option(s.name, s.name));
             codeSel.add(new Option(s.code, s.code));
         });
+    });
+
+    // SMART SYNC: Auto-select School Name when Code is chosen
+    document.getElementById('schoolCode').addEventListener('change', function() {
+        const selectedCode = this.value;
+        const matchingSchool = schoolData.find(s => String(s.code) === String(selectedCode));
+        if (matchingSchool) {
+            document.getElementById('schoolName').value = matchingSchool.name;
+        }
+    });
+
+    // SMART SYNC: Auto-select School Code when Name is chosen
+    document.getElementById('schoolName').addEventListener('change', function() {
+        const selectedName = this.value;
+        const matchingSchool = schoolData.find(s => s.name === selectedName);
+        if (matchingSchool) {
+            document.getElementById('schoolCode').value = matchingSchool.code;
+        }
     });
 
     function showReview() {
@@ -246,7 +263,7 @@
         
         fetch(SCRIPT_URL, { 
             method: 'POST', 
-            mode: 'no-cors', // <-- THE FIX: Bypasses the browser's strict CORS block
+            mode: 'no-cors',
             body: new FormData(document.getElementById('entryForm')) 
         })
             .then(() => {
