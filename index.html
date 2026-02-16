@@ -292,7 +292,13 @@
           </div>
           <div class="form-group full">
             <label>Name (Applicant)</label>
-            <input type="text" name="Name" pattern="[a-zA-Z\s\.]+" required />
+            <input
+              type="text"
+              id="nameInput"
+              name="Name"
+              pattern="[a-zA-Z\s\.]+"
+              required
+            />
           </div>
 
           <div class="form-group">
@@ -311,12 +317,19 @@
 
           <div class="form-group">
             <label>Mobile Number (10 Digits)</label>
-            <input type="tel" name="Mobile" pattern="\d{10}" required />
+            <input
+              type="tel"
+              id="mobileInput"
+              name="Mobile"
+              pattern="\d{10}"
+              required
+            />
           </div>
           <div class="form-group">
             <label>Email</label>
             <input
               type="email"
+              id="emailInput"
               name="Email"
               pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$"
               required
@@ -364,8 +377,13 @@
             <span>Banking & CV Camp Preference</span>
           </div>
           <div class="form-group">
-            <label>Account Number</label
-            ><input type="text" name="AccountNumber" required />
+            <label>Account Number</label>
+            <input
+              type="text"
+              id="accountInput"
+              name="AccountNumber"
+              required
+            />
           </div>
           <div class="form-group">
             <label>IFSC</label>
@@ -458,10 +476,10 @@
     <script>
       // MAKE SURE THIS IS YOUR LIVE /exec URL
       const SCRIPT_URL =
-        "https://script.google.com/macros/s/AKfycbzJCpmyYX6TgbsFbxbDfxBOnNsPZYRDezaXQ4ZZ_o75QtFLgZ-isS7vgiHafQ5RllJ_Hg/exec";
+        "https://script.google.com/macros/s/AKfycbyUV_qh90Oe0R6-4Lp29hOANMl7OYE89K3C6VylqQC-w9d7sgXIf22RxpyBimlHjRySiw/exec";
 
       let schoolData = [];
-      let campData = []; // NEW: Array to store the matching camp profiles
+      let campData = [];
 
       function populateDropdown(selectId, dataArray) {
         const select = document.getElementById(selectId);
@@ -506,15 +524,13 @@
               return;
             }
 
-            // Assign Memory Logic
             schoolData = data.mapping;
-            campData = data.campMapping; // Store the synced pairs
+            campData = data.campMapping;
 
             populateDropdown("district", data.districts);
             populateDropdown("subject", data.subjects);
             populateDropdown("designation", data.designations);
 
-            // Populate camps from the newly paired data
             populateDropdown(
               "cvCamp",
               campData.map((c) => c.name),
@@ -529,6 +545,49 @@
             setAllDropdownsError("Network Error. Reload page.");
           });
       };
+
+      // --- AUTO-FORMATTING LOGIC (Runs when user clicks away from a field) ---
+
+      // 1. Name Formatter
+      document
+        .getElementById("nameInput")
+        .addEventListener("blur", function () {
+          let val = this.value.replace(/\./g, "").trim().replace(/\s+/g, " "); // Strip periods & extra spaces
+          if (val) {
+            this.value = val
+              .split(" ")
+              .map((word) => {
+                if (word.length <= 2) return word.toUpperCase(); // Force 1-2 letters to UPPERCASE
+                return (
+                  word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+                ); // Capitalize normal words
+              })
+              .join(" ");
+          }
+        });
+
+      // 2. Email Formatter
+      document
+        .getElementById("emailInput")
+        .addEventListener("blur", function () {
+          this.value = this.value.replace(/\s/g, "").toLowerCase(); // Strip spaces & force lowercase
+        });
+
+      // 3. Number Formatter (Strips anything that isn't a digit)
+      const formatAsNumbers = function () {
+        this.value = this.value.replace(/\D/g, "");
+      };
+      document
+        .getElementById("penInput")
+        .addEventListener("blur", formatAsNumbers);
+      document
+        .getElementById("mobileInput")
+        .addEventListener("blur", formatAsNumbers);
+      document
+        .getElementById("accountInput")
+        .addEventListener("blur", formatAsNumbers);
+
+      // -------------------------------------------------------------------------
 
       // --- Live PEN Checking Logic ---
       const penInput = document.getElementById("penInput");
@@ -627,7 +686,7 @@
             document.getElementById("schoolCode").value = matchingSchool.code;
         });
 
-      // --- NEW: Dependent Logic for CV Camps ---
+      // --- Dependent Logic for CV Camps ---
       document.getElementById("cvCamp").addEventListener("change", function () {
         const matchingCamp = campData.find(
           (c) => String(c.name) === String(this.value),
