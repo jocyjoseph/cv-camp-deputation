@@ -165,7 +165,7 @@
 
 <script>
     // MAKE SURE THIS IS YOUR LIVE /exec URL
-    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbznIHRB2yzkye1nreBhM0P9PkbGFkgGpxtPA6x_UWO-AF0LGLzE-SJqAZZ86pJ1ynB6DA/exec';
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby3jqjs6mO_eTUWpzIiIyz111VtCizvrmY8hK-ap9cVrL28DpYNRhHq67lMOvtAXcuBkw/exec';
     let schoolData = [];
 
     function populateDropdown(selectId, dataArray) {
@@ -199,19 +199,19 @@
         .catch(error => console.error("Error fetching data:", error));
     };
 
-    // --- NEW: Live PEN Checking Logic ---
+    // --- Live PEN Checking Logic with Resubmission Memory ---
     const penInput = document.getElementById('penInput');
     const penStatus = document.getElementById('penStatus');
     let validatedPen = ""; 
     let isChecking = false;
+    let isResubmission = false; // Memory flag to track if this is a duplicate entry
 
     penInput.addEventListener('input', function() {
         const currentPen = this.value.trim();
         
-        // Only trigger if exactly 6 digits, we aren't already checking, and it's a new PEN
         if (currentPen.length === 6 && /^\d+$/.test(currentPen) && currentPen !== validatedPen && !isChecking) {
             isChecking = true;
-            penStatus.style.display = 'inline'; // Show "Checking..." text
+            penStatus.style.display = 'inline'; 
             
             fetch(SCRIPT_URL + '?action=checkPEN&pen=' + currentPen, { method: 'GET', redirect: 'follow' })
             .then(res => res.json())
@@ -223,13 +223,16 @@
                     const confirmMsg = `Warning: You previously submitted an application on ${data.timestamp}.\n\nContinuing and submitting this form will overwrite your previous entry.\n\nDo you want to proceed?`;
                     
                     if (confirm(confirmMsg)) {
-                        validatedPen = currentPen; // User said Yes, remember it so we don't ask again
+                        validatedPen = currentPen; 
+                        isResubmission = true; // Mark as a resubmission
                     } else {
-                        penInput.value = ''; // User said No, clear the box
+                        penInput.value = ''; 
                         validatedPen = "";
+                        isResubmission = false;
                     }
                 } else {
-                    validatedPen = currentPen; // Brand new PEN, perfectly fine
+                    validatedPen = currentPen; 
+                    isResubmission = false; // Clean, brand new entry
                 }
             })
             .catch(err => {
@@ -239,7 +242,6 @@
             });
         }
     });
-    // ------------------------------------
 
     // Dependent Logic
     document.getElementById('district').addEventListener('change', function() {
@@ -287,8 +289,18 @@
     }
 
     function finalSubmit() {
+        // --- SECOND WARNING CHECK ---
+        if (isResubmission) {
+            const finalWarning = confirm("FINAL WARNING: You are about to completely overwrite your previously submitted application.\n\nAre you sure you want to submit this new entry?");
+            if (!finalWarning) {
+                return; // User clicked Cancel, stop the submission process right here
+            }
+        }
+        // ----------------------------
+
         const btn = document.getElementById('finalBtn');
-        btn.disabled = true; btn.innerText = "Submitting...";
+        btn.disabled = true; 
+        btn.innerText = "Submitting...";
         
         fetch(SCRIPT_URL, { 
             method: 'POST', 
