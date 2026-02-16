@@ -70,15 +70,15 @@
     </div>
 
     <header>
-        <h1 id="mainTitle">CV Camp Deputation Portal</h1>
+        <h1 id="mainTitle">CV Camp Preference Form (March 2026)</h1>
         <div class="instruction-box no-print" id="instructionBox">
-            <p>This form is for teachers deputed to Centralized Valuation (CV) camps for <strong>non-vocational subjects</strong>. Please verify all details before final submission.</p>
+            <p>This form is intended for teachers deputed to Centralized Valuation (CV) camps for <strong>non-vocational subjects</strong> . Please ensure all entries are accurate and verified before final submission.</p>
         </div>
     </header>
 
     <div id="closedMessage" class="no-print">
         <h2>Portal Closed</h2>
-        <p>The last date for the submission of the application is over.<br>Please contact the VHSE examination office for details.</p>
+        <p>The last date for the submission of the application is over.<br>Please contact the VHSE examination office for details (0471-2324015).</p>
     </div>
 
     <form id="entryForm">
@@ -90,8 +90,8 @@
             </div>
             
             <div class="form-group">
-                <label>PEN (6 Digits) <span id="penStatus">Checking database...</span></label>
-                <input type="text" id="penInput" name="PEN" pattern="\d{6}" required>
+                <label>PEN (6 or 7 Digits) <span id="penStatus">Checking database...</span></label>
+                <input type="text" id="penInput" name="PEN" pattern="\d{6,7}" required>
             </div>
             
             <div class="form-group">
@@ -157,7 +157,7 @@
     </div>
 
     <div id="printFooter" style="margin-top: 40px; border-top: 1px solid #cbd5e1; padding-top: 10px;">
-        <p style="font-size: 12px; color: #64748b;">This is your personal copy of the form you submitted for your reference.</p>
+        <p style="font-size: 12px; color: #64748b;">You may print this document for your personal use and future reference. </p>
         <p style="font-size: 12px; color: #64748b; font-weight: bold;">Board of Vocational Higher Secondary Examinations, Thiruvananthapuram</p>
     </div>
     <div id="printTimestamp" style="font-size: 11px; color: #94a3b8; margin-top: 10px;"></div>
@@ -165,7 +165,7 @@
 
 <script>
     // MAKE SURE THIS IS YOUR LIVE /exec URL
-    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyUV_qh90Oe0R6-4Lp29hOANMl7OYE89K3C6VylqQC-w9d7sgXIf22RxpyBimlHjRySiw/exec';
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby3jqjs6mO_eTUWpzIiIyz111VtCizvrmY8hK-ap9cVrL28DpYNRhHq67lMOvtAXcuBkw/exec';
     let schoolData = [];
 
     function populateDropdown(selectId, dataArray) {
@@ -223,7 +223,8 @@
     penInput.addEventListener('input', function() {
         const currentPen = this.value.trim();
         
-        if (currentPen.length === 6 && /^\d+$/.test(currentPen) && currentPen !== validatedPen && !isChecking) {
+        // UPDATED: Now checks for lengths of 6 OR 7
+        if ((currentPen.length === 6 || currentPen.length === 7) && /^\d+$/.test(currentPen) && currentPen !== validatedPen && !isChecking) {
             isChecking = true;
             penStatus.style.display = 'inline'; 
             penStatus.style.color = '#f59e0b';
