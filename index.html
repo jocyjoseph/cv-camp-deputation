@@ -420,10 +420,14 @@
       </form>
 
       <div id="reviewMode" style="display: none">
-        <div class="review-grid" id="reviewContent"></div>
         <div
           id="reviewActionButtons"
-          style="display: flex; gap: 15px; margin-top: 30px"
+          style="
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            margin-top: 10px;
+          "
           class="no-print"
         >
           <button
@@ -449,6 +453,8 @@
             Final Verify & Submit
           </button>
         </div>
+
+        <div class="review-grid" id="reviewContent"></div>
       </div>
 
       <div
@@ -718,8 +724,7 @@
           html += `<div class="review-item"><div class="review-label">${key}</div><div class="review-value">${val || "-"}</div></div>`;
         });
 
-        document.getElementById("mainTitle").innerText =
-          "Application Summary";
+        document.getElementById("mainTitle").innerText = "Application Summary";
         document.getElementById("instructionBox").style.display = "none";
         document.getElementById("reviewContent").innerHTML = html;
         document.getElementById("entryForm").style.display = "none";
@@ -771,7 +776,3 @@
     </script>
   </body>
 </html>
-
-
-
-
